@@ -10,17 +10,17 @@ import {
 const router = Router();
 
 // GET all Employees
-router.get("/Productos", getProductos);
+router.get("/products", getProductos);
 
 // GET An Employee
-router.get("/Productos/:id", getProducto);
+router.get("/products/:id", getProducto);
 
 // DELETE An Employee
-router.delete("/Productos/:id", deleteProducto);
+router.delete("/products/:id", deleteProducto);
 
 // INSERT An Employee
-router.post("/Productos", createProducto);
+router.post("/products", createProducto);
 
-router.put("/Productos/:id", updateProducto);
+router.put("/products/:id", updateProducto);
 
 export default router;
