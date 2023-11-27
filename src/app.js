@@ -2,6 +2,7 @@ import express from "express";
 import morgan from "morgan";
 import cors from "cors"; // Importa el módulo cors
 
+
 import usuarioRoutes from "./routes/usuario.routes.js";
 import productoRoutes from './routes/producto.routes.js'
 import carritoRoutes from './routes/carrito.routes.js'

@@ -29,28 +29,48 @@ export const getCarritoByUser = async (req, res) => {
 export const addToCarrito = async (req, res) => {
   try {
     const { usuario_id, producto_id, cantidad, status } = req.body;
-    console.log(req.body)
-    const [rows] = await pool.query(
-      'INSERT INTO carrito (usuario_id, producto_id, cantidad, status) VALUES (?, ?, ?,?)',
-      [usuario_id, producto_id, cantidad,status]
+
+    // Verificar si el producto ya está en el carrito
+    const [existingProduct] = await pool.query(
+      'SELECT * FROM carrito WHERE usuario_id = ? AND producto_id = ?',
+      [usuario_id, producto_id]
     );
-    console.log(rows)
-    res.status(201).json({ id: rows.insertId, usuario_id, producto_id, cantidad,status });
+
+    if (existingProduct.length > 0) {
+      // Si el producto ya está en el carrito, actualiza la cantidad
+      const updatedQuantity = existingProduct[0].cantidad + cantidad;
+      await pool.query(
+        'UPDATE carrito SET cantidad = ? WHERE usuario_id = ? AND producto_id = ?',
+        [updatedQuantity, usuario_id, producto_id]
+      );
+
+      return res.status(200).json({ message: 'Carrito actualizado correctamente' });
+    }
+
+    // Si el producto no está en el carrito, agrégalo
+    const [rows] = await pool.query(
+      'INSERT INTO carrito (usuario_id, producto_id, cantidad, status) VALUES (?, ?, ?, ?)',
+      [usuario_id, producto_id, cantidad, status]
+    );
+
+    res.status(201).json({ id: rows.insertId, usuario_id, producto_id, cantidad, status });
   } catch (error) {
+    console.error(error);
     return res.status(500).json({ message: 'Algo salió mal' });
   }
 };
 
+
 export const removeFromCarrito = async (req, res) => {
   try {
-    const { usuario_id, producto_id } = req.params;
+    const { producto_id } = req.params;
     const [rows] = await pool.query(
-      'DELETE FROM carrito WHERE usuario_id = ? AND producto_id = ?',
-      [usuario_id, producto_id]
+      'DELETE FROM carrito WHERE producto_id = ?',
+      [producto_id]
     );
 
     if (rows.affectedRows <= 0) {
-      return res.status(404).json({ message: 'Producto no encontrado en el carrito' });
+      return res.status(404).json({ message: 'Producto no encontrado en ningún carrito' });
     }
 
     res.sendStatus(204);
@@ -58,6 +78,7 @@ export const removeFromCarrito = async (req, res) => {
     return res.status(500).json({ message: 'Algo salió mal' });
   }
 };
+
 
 
 export const updateCarrito = async (req, res) => {
@@ -78,9 +99,3 @@ export const updateCarrito = async (req, res) => {
     return res.status(500).json({ message: 'Algo salió mal' });
   }
 };
-
-// export const getUsuarioCarrito =? async (req, res) => {
-//   try{
-
-//   }
-// }

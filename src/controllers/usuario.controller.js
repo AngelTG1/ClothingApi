@@ -1,4 +1,6 @@
   import { pool } from "../db.js";
+  import jwt from 'jsonwebtoken';
+  import bcrypt from 'bcrypt';
 
   export const getUsuarios = async (req, res) => {
     try {
@@ -21,6 +23,36 @@
       res.json(rows[0]);
     } catch (error) {
       return res.status(500).json({ message: "Something goes wrong" });
+    }
+  };
+
+  export const loginUsuario = async (req, res) => {
+    try {
+      const { correo, contrasenia } = req.body;
+  
+      // Buscar al usuario por su correo
+      const [rows] = await pool.query("SELECT * FROM usuarios WHERE correo = ?", [correo]);
+  
+      if (rows.length === 0) {
+        return res.status(401).json({ message: "Credenciales inválidas" });
+      }
+  
+      const user = rows[0];
+  
+      // Comparar la contraseña proporcionada con la almacenada en la base de datos
+      const passwordMatch = await bcrypt.compare(contrasenia, user.contrasenia);
+  
+      if (!passwordMatch) {
+        return res.status(401).json({ message: "Credenciales inválidas" });
+      }
+  
+      // Crear un token JWT para la autenticación
+      const token = jwt.sign({ usuario_id: user.id, correo: user.correo }, 'mi_secreto', { expiresIn: '1h' });
+  
+      res.json({ token });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Algo salió mal" });
     }
   };
 

@@ -17,10 +17,10 @@ router.get("/carrito/:idUser/user",getCarritoByUser ); //Retornar el id del carr
 // router.get("/usuarios/:id", getUsuario);
 
 // DELETE An Employee
-router.delete("/carrito/:id", removeFromCarrito);
+router.delete("/carrito/producto/:producto_id", removeFromCarrito);
 
 // INSERT An Employee
-router.post("/carrito", addToCarrito);
+router.post("/carrito/", addToCarrito);
 
 router.put("/carrito/:id", updateCarrito);
 

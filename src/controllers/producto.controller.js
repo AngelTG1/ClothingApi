@@ -42,25 +42,34 @@ export const deleteProducto = async (req, res) => {
     const [rows] = await pool.query("DELETE FROM products WHERE id = ?", [id]);
 
     if (rows.affectedRows <= 0) {
-      return res.status(404).json({ message: "Usuario not found" });
+      return res.status(404).json({ message: "Producto no encontrado" });
     }
 
     res.sendStatus(204);
   } catch (error) {
-    return res.status(500).json({ message: "Something goes wrong" });
+    console.error("Error al intentar eliminar el producto:", error);
+    return res.status(500).json({ message: "Algo salió mal en el servidor" });
   }
 };
 
+
 export const createProducto = async (req, res) => {
   try {
-    const { title, price, description, category, color, size, type, image, amount, id_usuario_fk } = req.body;
+    const { title, price, description, category, color, size, type, image, amount } = req.body;
     const [rows] = await pool.query(
-      "INSERT INTO products (title, price, description, category, color, size, type, image, amount, id_usuario_fk) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-      [title, price, description, category, color, size, type, image, amount, id_usuario_fk]
+      "INSERT INTO products (title, price, description, category, color, size, type, image, amount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      [title, price, description, category, color, size, type, image, amount]
     );
-    res.status(201).json({ id: rows.insertId, title, price, description, category, color, size, type, image, amount, id_usuario_fk });
+    
+    if (rows && rows.insertId) {
+      res.status(201).json({ id: rows.insertId, title, price, description, category, color, size, type, image, amount });
+    } else {
+      console.error("Error: Rows or insertId not found in the result.");
+      return res.status(500).json({ message: "Something went wrong while adding the product." });
+    }
   } catch (error) {
-    return res.status(500).json({ message: "Something goes wrong" });
+    console.error("Error in createProducto:", error);
+    return res.status(500).json({ message: "Something went wrong while adding the product." });
   }
 };
 
@@ -77,11 +86,10 @@ export const updateProducto = async (req, res) => {
       type,
       image,
       amount,
-      id_usuario_fk,
     } = req.body;
 
     const query =
-      "UPDATE products SET title = IFNULL(?, title), price = IFNULL(?, price), description = IFNULL(?, description), category = IFNULL(?, category), color = IFNULL(?, color), size = IFNULL(?, size), type = IFNULL(?, type), image = IFNULL(?, image), amount = IFNULL(?, amount), id_usuario_fk = IFNULL(?, id_usuario_fk) WHERE id = ?";
+      "UPDATE products SET title = IFNULL(?, title), price = IFNULL(?, price), description = IFNULL(?, description), category = IFNULL(?, category), color = IFNULL(?, color), size = IFNULL(?, size), type = IFNULL(?, type), image = IFNULL(?, image), amount = IFNULL(?, amount) WHERE id = ?";
     const values = [
       title,
       price,
@@ -92,7 +100,6 @@ export const updateProducto = async (req, res) => {
       type,
       image,
       amount,
-      id_usuario_fk,
       id,
     ];
 
@@ -108,4 +115,5 @@ export const updateProducto = async (req, res) => {
     return res.status(500).json({ message: "Something went wrong" });
   }
 };
+
 
